@@ -12,21 +12,32 @@ server SPEAKER interface
 参数ID定义
 
 动作ID定义
+#define     SPEAKER_CTL_INTERCOM_START      	0x0030
+#define     SPEAKER_CTL_INTERCOM_STOP       	0x0040
+#define     SPEAKER_CTL_INTERCOM_DATA        	0x0050
 
+#define     SPEAKER_CTL_DEV_START_FINISH        0x0060
+#define     SPEAKER_CTL_ZBAR_SCAN_SUCCEED       0x0070
+#define     SPEAKER_CTL_WIFI_CONNECT            0x0080
 ################################################################################
 数据结构（STRUCT）
 ################################################################################
 IOT参数结构体：提供给其他服务器的统一参数接口
 typedef struct speaker_iot_config_t {
-	(待补)
+	NULL,
 } speaker_iot_config_t;
 ################################################################################
 消息（MESSAGE）
 ################################################################################
-#define		MSG_SPEAKER_BASE					(SERVER_SPEAKER<<16>)
+#define		MSG_SPEAKER_BASE					(SERVER_SPEAKER<<16)
 #define		MSG_SPEAKER_SIGINT					MSG_SPEAKER_BASE | 0x0000
 #define		MSG_SPEAKER_SIGINT_ACK				MSG_SPEAKER_BASE | 0x1000
-#define		MSG_SPEAKER_AUDIO_DATA				MSG_SPEAKER_BASE | 0x0100
+#define		MSG_SPEAKER_SIGTERM					MSG_SPEAKER_BASE | 0x0001
+#define		MSG_SPEAKER_EXIT					MSG_SPEAKER_BASE | 0X0002
+#define 	MSG_SPEAKER_CTL_PLAY				MSG_SPEAKER_BASE | 0x0003
+#define 	MSG_SPEAKER_CTL_PLAY_ACK			MSG_SPEAKER_BASE | 0x1003
+#define 	MSG_SPEAKER_CTL_DATA				MSG_SPEAKER_BASE | 0x0004
+#define 	MSG_SPEAKER_CTL_DATA_ACK			MSG_SPEAKER_BASE | 0x1004
 --------------------------------------------------------------------------------
 		MSG_SPEAKER_SIGINT
 消息说明：		服务器发送SIGINT系统响应到MANAGER
@@ -35,19 +46,31 @@ typedef struct speaker_iot_config_t {
 传入参数：		无
 返回消息：		无
 --------------------------------------------------------------------------------
-
+		MSG_SPEAKER_CTL_PLAY
+消息说明：		控制speaker播放相应的本地音频
+发送服务器：		MIIO,MISS,VIDEO
+接受服务器：		DEVICE
+传入参数：
+	arg_in:		message_arg_t				传入参数
+		cat:	int							需要播放的本地音频类型（参照上面动作ID宏）（必须）
+	arg_pass:	message_arg_t				回传参数
+返回消息：		必须
+		MSG_SPEAKER_CTL_PLAY_ACK
+传回参数：
+	result:		int							0:成功，其他失败
+	arg_pass:	message_arg_t				回传参数，原样拷贝
 --------------------------------------------------------------------------------
-		MSG_SPEAKER_AUDIO_DATA
-消息说明：		接收和处理从AUDIO服务器发出的视频数据
+		MSG_SPEAKER_CTL_DATA
+消息说明：			播放从其他服务器发出的视频数据buf(目前只支持alaw格式音频，后续需要可以做扩展)
 发送服务器：		所有服务器
 接受服务器：		SPEAKER
 传入参数：
 	arg:		char*					音频数据
 	arg_size:	int						音频数据大小
 	arg_in		message_arg_t			传入参数
-		cat:	int						音频编码
-		dog:	int						音频标志位
-		chick:	int						音频祯ID
-		duck:	int						音频时刻，秒
-返回消息：		无
+		cat:	int						（必须是SPEAKER_CTL_INTERCOM_DATA）
+返回消息：		MSG_SPEAKER_CTL_DATA_ACK
+传回参数：
+	result:		int							0:成功，其他失败
+	arg_pass:	message_arg_t				回传参数，原样拷贝
 ---------------------------------------------------------------------------------
