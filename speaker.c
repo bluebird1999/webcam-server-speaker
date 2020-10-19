@@ -22,8 +22,7 @@
 #include "../../manager/manager_interface.h"
 #include "../../server/realtek/realtek_interface.h"
 #include "../../tools/tools_interface.h"
-#include "../../server/config/config_audio_interface.h"
-#include "../../server/config/config_interface.h"
+#include "../../server/audio/config.h"
 #include "../../server/miio/miio_interface.h"
 #include "../../server/miss/miss_interface.h"
 #include "../../server/audio/audio_interface.h"
@@ -145,7 +144,7 @@ static int send_message(int receiver, message_t *msg)
 	int st;
 	switch(receiver) {
 	case SERVER_CONFIG:
-		st = server_config_message(msg);
+//		st = server_config_message(msg);
 		break;
 	case SERVER_DEVICE:
 		break;
