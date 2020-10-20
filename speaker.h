@@ -20,7 +20,11 @@
 /*
  * structure
  */
-
+typedef struct server_name
+{
+	int index;
+	char name[64];
+}server_name_t;
 
 /*
  * function

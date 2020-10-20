@@ -46,6 +46,22 @@
 //variable
 static 	message_buffer_t	message;
 static 	server_info_t 		info;
+static server_name_t server_name_tt[] = {
+		{0, "config"},
+		{1, "device"},
+		{2, "kernel"},
+		{3, "realtek"},
+		{4, "miio"},
+		{5, "miss"},
+		{6, "micloud"},
+		{7, "video"},
+		{8, "audio"},
+		{9, "recorder"},
+		{10, "player"},
+		{11, "speaker"},
+		{32, "manager"},
+};
+
 //function
 //common
 static void *server_func(void *arg);
@@ -67,6 +83,7 @@ static int send_iot_ack(message_t *org_msg, message_t *msg, int id, int receiver
 static int send_message(int receiver, message_t *msg);
 //specific
 static int play(char *path);
+static char* get_string_name(int i);
 /*
  * %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  * %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -90,6 +107,18 @@ static void server_thread_termination(int arg)
     msg.sender = msg.receiver = SERVER_AUDIO;
     /****************************/
     manager_message(&msg);
+}
+
+static char* get_string_name(int i)
+{
+	char *ret = NULL;
+
+	if(i == SERVER_MANAGER)
+		ret = server_name_tt[sizeof(server_name_tt)/sizeof(server_name_t) - 1].name;
+	else
+		ret = server_name_tt[i].name;
+
+	return ret;
 }
 
 static int server_release(void)
@@ -434,6 +463,7 @@ int server_speaker_message(message_t *msg)
 		return ret;
 	}
 	ret = msg_buffer_push(&message, msg);
+	log_info("push into the speaker message queue: sender=%s, message=%d, ret=%d", get_string_name(msg->sender), msg->message, ret);
 	if( ret!=0 )
 		log_err("message push in speaker error =%d", ret);
 	ret = pthread_rwlock_unlock(&message.lock);
