@@ -56,17 +56,26 @@ int intercom_stop(void)
         return -1;
     }
     
-    rts_av_stop_send(myplayback.decode);
+    if(myplayback.decode > -1)
+    	rts_av_stop_send(myplayback.decode);
     
-    rts_av_disable_chn(myplayback.playback);
-    rts_av_disable_chn(myplayback.resample);
-    rts_av_disable_chn(myplayback.decode);
-    rts_av_disable_chn(myplayback.mixer);
+    if(myplayback.playback > -1)
+		rts_av_disable_chn(myplayback.playback);
+    if(myplayback.resample > -1)
+		rts_av_disable_chn(myplayback.resample);
+    if(myplayback.decode > -1)
+		rts_av_disable_chn(myplayback.decode);
+    if(myplayback.mixer > -1)
+		rts_av_disable_chn(myplayback.mixer);
     
-    rts_av_destroy_chn(myplayback.playback);
-    rts_av_destroy_chn(myplayback.resample);
-    rts_av_destroy_chn(myplayback.decode);
-    rts_av_destroy_chn(myplayback.mixer);
+    if(myplayback.playback > -1)
+		rts_av_destroy_chn(myplayback.playback);
+    if(myplayback.resample > -1)
+		rts_av_destroy_chn(myplayback.resample);
+    if(myplayback.decode > -1)
+		rts_av_destroy_chn(myplayback.decode);
+    if(myplayback.mixer > -1)
+		rts_av_destroy_chn(myplayback.mixer);
     
     myplayback.playback = -1;
     myplayback.resample = -1;

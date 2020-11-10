@@ -36,9 +36,11 @@
 /*
  * #define
  */
-#define DEV_START_FINISH "/mnt/media/audio_resource/dev_start_finish.alaw"
-#define WIFI_CONNECT_SUCCEED "/mnt/media/audio_resource/wifi_connect_success.alaw"
-#define ZBAR_SCAN_SUCCEED "/mnt/media/audio_resource/getWirelessInformation.alaw"
+#define DEV_START_FINISH 			"/opt/qcy/audio_resource/dev_start_finish.alaw"
+#define WIFI_CONNECT_SUCCEED 		"/opt/qcy/audio_resource/wifi_connect_success.alaw"
+#define ZBAR_SCAN_SUCCEED 			"/opt/qcy/audio_resource/scan_zbar_success.alaw"
+#define ZBAR_SCAN					"/opt/qcy/audio_resource/wait_connect.alaw"
+
 
 /*
  * static
@@ -59,6 +61,8 @@ static server_name_t server_name_tt[] = {
 		{9, "recorder"},
 		{10, "player"},
 		{11, "speaker"},
+		{12, "video2"},
+		{13, "scanner"},
 		{32, "manager"},
 };
 
@@ -104,7 +108,7 @@ static void server_thread_termination(int arg)
     /********message body********/
     msg_init(&msg);
     msg.message = MSG_SPEAKER_SIGINT;
-    msg.sender = msg.receiver = SERVER_AUDIO;
+    msg.sender = msg.receiver = SERVER_SPEAKER;
     /****************************/
     manager_message(&msg);
 }
@@ -124,6 +128,11 @@ static char* get_string_name(int i)
 static int server_release(void)
 {
     int ret = 0;
+
+    ret = intercom_stop();
+
+    msg_buffer_release(&message);
+
     return ret;
 }
 
@@ -159,7 +168,7 @@ static int send_iot_ack(message_t *org_msg, message_t *msg, int id, int receiver
 	msg_init(msg);
 	memcpy(&(msg->arg_pass), &(org_msg->arg_pass),sizeof(message_arg_t));
 	msg->message = id | 0x1000;
-	msg->sender = msg->receiver = SERVER_DEVICE;
+	msg->sender = msg->receiver = SERVER_SPEAKER;
 	msg->result = result;
 	msg->arg = arg;
 	msg->arg_size = size;
@@ -269,6 +278,10 @@ static int server_message_proc(void)
 				ret = play(WIFI_CONNECT_SUCCEED);
 				send_iot_ack(&msg, &send_msg, MSG_SPEAKER_CTL_PLAY_ACK, msg.receiver, ret,
 						NULL, 0);
+			} else if( msg.arg_in.cat == SPEAKER_CTL_ZBAR_SCAN ) {
+				ret = play(ZBAR_SCAN);
+				send_iot_ack(&msg, &send_msg, MSG_SPEAKER_CTL_PLAY_ACK, msg.receiver, ret,
+						NULL, 0);
 			} else if( msg.arg_in.cat == SPEAKER_CTL_INTERCOM_START ) {
 				ret = intercom_start();
 				send_iot_ack(&msg, &send_msg, MSG_SPEAKER_CTL_PLAY_ACK, msg.receiver, ret,
@@ -288,6 +301,9 @@ static int server_message_proc(void)
 						NULL, 0);
 			}
             break;
+        default:
+        	log_err("not processed message = %d", msg.message);
+        	break;
     }
     
     msg_free(&msg);
@@ -418,7 +434,7 @@ static void *server_func(void* arg)
     /********message body********/
     msg_init(&msg);
     msg.message = MSG_MANAGER_EXIT_ACK;
-    msg.sender = SERVER_AUDIO;
+    msg.sender = SERVER_SPEAKER;
     /***************************/
     manager_message(&msg);
     
