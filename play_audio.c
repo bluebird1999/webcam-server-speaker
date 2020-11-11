@@ -91,7 +91,7 @@ int play_audio(char *path)
 {
     int ret;
     struct __server_info info;
-    int finish;
+    int finish = 0;
 
     if(access(path, R_OK))
     {
