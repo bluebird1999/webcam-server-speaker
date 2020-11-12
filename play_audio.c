@@ -186,9 +186,9 @@ int init_server_info(struct __server_info *info)
     info->mixer_ch = -1;
     info->playback_ch = -1;
     snprintf(info->cfg_p.dev_node, sizeof(info->cfg_p.dev_node), "hw:0,1");
-    info->cfg_p.rate = 16000;
+    info->cfg_p.rate = 8000;
     info->cfg_p.format = 16;
-    info->cfg_p.channels = 2;
+    info->cfg_p.channels = 1;
 
     info->chunk_bytes = 512;
 

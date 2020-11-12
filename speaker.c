@@ -297,8 +297,8 @@ static int server_message_proc(void)
         		if(msg.arg) {
 					intercom_speak(msg.arg, msg.arg_size);
 				}
-				send_iot_ack(&msg, &send_msg, MSG_SPEAKER_CTL_DATA_ACK, msg.receiver, ret,
-						NULL, 0);
+				//send_iot_ack(&msg, &send_msg, MSG_SPEAKER_CTL_DATA_ACK, msg.receiver, ret,
+				//		NULL, 0);
 			}
             break;
         default:
@@ -470,20 +470,20 @@ int server_speaker_message(message_t *msg)
 {
 	int ret = 0;
 	if( server_get_status(STATUS_TYPE_STATUS)!= STATUS_RUN ) {
-		log_err("speaker server is not ready!");
+		log_qcy(DEBUG_SERIOUS, "speaker server is not ready!");
 		return -1;
 	}
 	ret = pthread_rwlock_wrlock(&message.lock);
 	if(ret)	{
-		log_err("add message lock fail, ret = %d\n", ret);
+		log_qcy(DEBUG_SERIOUS, "add message lock fail, ret = %d\n", ret);
 		return ret;
 	}
 	ret = msg_buffer_push(&message, msg);
-	log_info("push into the speaker message queue: sender=%s, message=%d, ret=%d", get_string_name(msg->sender), msg->message, ret);
+	log_qcy(DEBUG_VERBOSE, "push into the speaker message queue: sender=%s, message=%d, ret=%d", get_string_name(msg->sender), msg->message, ret);
 	if( ret!=0 )
-		log_err("message push in speaker error =%d", ret);
+		log_qcy(DEBUG_SERIOUS, "message push in speaker error =%d", ret);
 	ret = pthread_rwlock_unlock(&message.lock);
 	if (ret)
-		log_err("add message unlock fail, ret = %d\n", ret);
+		log_qcy(DEBUG_SERIOUS, "add message unlock fail, ret = %d\n", ret);
 	return ret;
 }
