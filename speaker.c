@@ -40,7 +40,10 @@
 #define WIFI_CONNECT_SUCCEED 		"/opt/qcy/audio_resource/wifi_connect_success.alaw"
 #define ZBAR_SCAN_SUCCEED 			"/opt/qcy/audio_resource/scan_zbar_success.alaw"
 #define ZBAR_SCAN					"/opt/qcy/audio_resource/wait_connect.alaw"
-
+#define INSTALLING					"/opt/qcy/audio_resource/begin_update.alaw"
+#define INSTALLEND					"/opt/qcy/audio_resource/success_upgrade.alaw"
+#define INSTALLFAILED				"/opt/qcy/audio_resource/upgrade_failed.alaw"
+#define RESET_SUCCESS				"/opt/qcy/audio_resource/reset_success.alaw"
 
 /*
  * static
@@ -291,6 +294,29 @@ static int server_message_proc(void)
 				send_iot_ack(&msg, &send_msg, MSG_SPEAKER_CTL_PLAY_ACK, msg.receiver, ret,
 						NULL, 0);
 			}
+
+			else if( msg.arg_in.cat == SPEAKER_CTL_INSTALLING ) {
+							ret = play(INSTALLING);
+							send_iot_ack(&msg, &send_msg, MSG_SPEAKER_CTL_PLAY_ACK, msg.receiver, ret,
+									NULL, 0);
+			}
+			else if( msg.arg_in.cat == SPEAKER_CTL_INSTALLEND ) {
+							ret = play(INSTALLEND);
+							send_iot_ack(&msg, &send_msg, MSG_SPEAKER_CTL_PLAY_ACK, msg.receiver, ret,
+									NULL, 0);
+			}
+			else if( msg.arg_in.cat == SPEAKER_CTL_INSTALLFAILED ) {
+							ret = play(INSTALLFAILED);
+							send_iot_ack(&msg, &send_msg, MSG_SPEAKER_CTL_PLAY_ACK, msg.receiver, ret,
+									NULL, 0);
+			}
+
+			else if( msg.arg_in.cat == SPEAKER_CTL_RESET ) {
+							ret = play(RESET_SUCCESS);
+							send_iot_ack(&msg, &send_msg, MSG_SPEAKER_CTL_PLAY_ACK, msg.receiver, ret,
+									NULL, 0);
+			}
+
             break;
         case MSG_SPEAKER_CTL_DATA:
         	if( msg.arg_in.cat == SPEAKER_CTL_INTERCOM_DATA ) {
