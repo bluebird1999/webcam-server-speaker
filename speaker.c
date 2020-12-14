@@ -48,6 +48,8 @@
 /*
  * static
  */
+static int intercom_flag = 0;
+
 //variable
 static 	message_buffer_t	message;
 static 	server_info_t 		info;
@@ -260,7 +262,9 @@ static int server_message_proc(void)
     if (ret == -1)
         return -1;
     else if( ret == 1)
-        return 0;
+    {
+    	return 0;
+    }
     switch(msg.message){
         case MSG_MANAGER_EXIT:
             server_set_status(STATUS_TYPE_EXIT,1);
@@ -287,10 +291,12 @@ static int server_message_proc(void)
 						NULL, 0);
 			} else if( msg.arg_in.cat == SPEAKER_CTL_INTERCOM_START ) {
 				ret = intercom_start();
+				intercom_flag = 1;
 				send_iot_ack(&msg, &send_msg, MSG_SPEAKER_CTL_PLAY_ACK, msg.receiver, ret,
 						NULL, 0);
 			} else if( msg.arg_in.cat == SPEAKER_CTL_INTERCOM_STOP ) {
 				ret = intercom_stop();
+				intercom_flag = 0;
 				send_iot_ack(&msg, &send_msg, MSG_SPEAKER_CTL_PLAY_ACK, msg.receiver, ret,
 						NULL, 0);
 			}
@@ -451,7 +457,9 @@ static void *server_func(void* arg)
 			server_error();
 			break;
 		}
-//		usleep(100);//100ms
+		//usleep(100 * 1000);//100ms
+		if(!intercom_flag)
+			usleep(100 * 1000);
 	}
     
     server_release();
