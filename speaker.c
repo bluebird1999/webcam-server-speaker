@@ -37,6 +37,7 @@
  * #define
  */
 #define DEV_START_FINISH 			"/opt/qcy/audio_resource/dev_start_finish.alaw"
+#define DEV_START_ING				"/opt/qcy/audio_resource/dev_starting.alaw"
 #define WIFI_CONNECT_SUCCEED 		"/opt/qcy/audio_resource/wifi_connect_success.alaw"
 #define ZBAR_SCAN_SUCCEED 			"/opt/qcy/audio_resource/scan_zbar_success.alaw"
 #define ZBAR_SCAN					"/opt/qcy/audio_resource/wait_connect.alaw"
@@ -275,20 +276,20 @@ static int server_message_proc(void)
         case MSG_SPEAKER_CTL_PLAY:
         	if( msg.arg_in.cat == SPEAKER_CTL_DEV_START_FINISH ) {
 				ret = play(DEV_START_FINISH);
-				send_iot_ack(&msg, &send_msg, MSG_SPEAKER_CTL_PLAY_ACK, msg.receiver, ret,
-						NULL, 0);
+//				send_iot_ack(&msg, &send_msg, MSG_SPEAKER_CTL_PLAY_ACK, msg.receiver, ret,
+//						NULL, 0);
 			} else if( msg.arg_in.cat == SPEAKER_CTL_ZBAR_SCAN_SUCCEED ) {
 				ret = play(ZBAR_SCAN_SUCCEED);
-				send_iot_ack(&msg, &send_msg, MSG_SPEAKER_CTL_PLAY_ACK, msg.receiver, ret,
-						NULL, 0);
+//				send_iot_ack(&msg, &send_msg, MSG_SPEAKER_CTL_PLAY_ACK, msg.receiver, ret,
+//						NULL, 0);
 			} else if( msg.arg_in.cat == SPEAKER_CTL_WIFI_CONNECT ) {
 				ret = play(WIFI_CONNECT_SUCCEED);
-				send_iot_ack(&msg, &send_msg, MSG_SPEAKER_CTL_PLAY_ACK, msg.receiver, ret,
-						NULL, 0);
+//				send_iot_ack(&msg, &send_msg, MSG_SPEAKER_CTL_PLAY_ACK, msg.receiver, ret,
+//						NULL, 0);
 			} else if( msg.arg_in.cat == SPEAKER_CTL_ZBAR_SCAN ) {
 				ret = play(ZBAR_SCAN);
-				send_iot_ack(&msg, &send_msg, MSG_SPEAKER_CTL_PLAY_ACK, msg.receiver, ret,
-						NULL, 0);
+//				send_iot_ack(&msg, &send_msg, MSG_SPEAKER_CTL_PLAY_ACK, msg.receiver, ret,
+//						NULL, 0);
 			} else if( msg.arg_in.cat == SPEAKER_CTL_INTERCOM_START ) {
 				ret = intercom_start();
 				intercom_flag = 1;
@@ -303,26 +304,30 @@ static int server_message_proc(void)
 
 			else if( msg.arg_in.cat == SPEAKER_CTL_INSTALLING ) {
 							ret = play(INSTALLING);
-							send_iot_ack(&msg, &send_msg, MSG_SPEAKER_CTL_PLAY_ACK, msg.receiver, ret,
-									NULL, 0);
+//							send_iot_ack(&msg, &send_msg, MSG_SPEAKER_CTL_PLAY_ACK, msg.receiver, ret,
+//									NULL, 0);
 			}
 			else if( msg.arg_in.cat == SPEAKER_CTL_INSTALLEND ) {
 							ret = play(INSTALLEND);
-							send_iot_ack(&msg, &send_msg, MSG_SPEAKER_CTL_PLAY_ACK, msg.receiver, ret,
-									NULL, 0);
+//							send_iot_ack(&msg, &send_msg, MSG_SPEAKER_CTL_PLAY_ACK, msg.receiver, ret,
+//									NULL, 0);
 			}
 			else if( msg.arg_in.cat == SPEAKER_CTL_INSTALLFAILED ) {
 							ret = play(INSTALLFAILED);
-							send_iot_ack(&msg, &send_msg, MSG_SPEAKER_CTL_PLAY_ACK, msg.receiver, ret,
-									NULL, 0);
+//							send_iot_ack(&msg, &send_msg, MSG_SPEAKER_CTL_PLAY_ACK, msg.receiver, ret,
+//									NULL, 0);
 			}
 
 			else if( msg.arg_in.cat == SPEAKER_CTL_RESET ) {
 							ret = play(RESET_SUCCESS);
-							send_iot_ack(&msg, &send_msg, MSG_SPEAKER_CTL_PLAY_ACK, msg.receiver, ret,
-									NULL, 0);
+//							send_iot_ack(&msg, &send_msg, MSG_SPEAKER_CTL_PLAY_ACK, msg.receiver, ret,
+//									NULL, 0);
 			}
-
+			else if( msg.arg_in.cat == SPEAKER_CTL_DEV_START_ING ) {
+							ret = play(DEV_START_ING);
+//							send_iot_ack(&msg, &send_msg, MSG_SPEAKER_CTL_PLAY_ACK, msg.receiver, ret,
+//									NULL, 0);
+			}
             break;
         case MSG_SPEAKER_CTL_DATA:
         	if( msg.arg_in.cat == SPEAKER_CTL_INTERCOM_DATA ) {
