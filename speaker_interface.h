@@ -16,7 +16,7 @@
 /*
  * define
  */
-#define		SERVER_SPEAKER_VERSION_STRING		"alpha-1.7.1"
+#define		SERVER_SPEAKER_VERSION_STRING		"alpha-1.8"
 
 #define		MSG_SPEAKER_BASE					(SERVER_SPEAKER<<16)
 #define		MSG_SPEAKER_SIGINT					MSG_SPEAKER_BASE | 0x0000
@@ -37,12 +37,12 @@
 #define     SPEAKER_CTL_DEV_START_FINISH        0x0060
 #define     SPEAKER_CTL_ZBAR_SCAN_SUCCEED       0x0070
 #define     SPEAKER_CTL_WIFI_CONNECT            0x0080
+#define     SPEAKER_CTL_INTERNET_CONNECT_DEFEAT	0x0081
 #define     SPEAKER_CTL_ZBAR_SCAN	            0x0090
 #define     SPEAKER_CTL_INSTALLING		        0x0091
 #define     SPEAKER_CTL_INSTALLEND				0x0092
 #define     SPEAKER_CTL_INSTALLFAILED		    0x0093
 #define     SPEAKER_CTL_RESET				    0x0094
-#define     SPEAKER_CTL_DEV_START_ING			0x0095
 
 /*
  * structure

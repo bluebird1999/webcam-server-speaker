@@ -37,8 +37,8 @@
  * #define
  */
 #define DEV_START_FINISH 			"/opt/qcy/audio_resource/dev_start_finish.alaw"
-#define DEV_START_ING				"/opt/qcy/audio_resource/dev_starting.alaw"
 #define WIFI_CONNECT_SUCCEED 		"/opt/qcy/audio_resource/wifi_connect_success.alaw"
+#define INTERNET_CONNECT_DEFEAT		"/opt/qcy/audio_resource/wifi_connect_failed.alaw"
 #define ZBAR_SCAN_SUCCEED 			"/opt/qcy/audio_resource/scan_zbar_success.alaw"
 #define ZBAR_SCAN					"/opt/qcy/audio_resource/wait_connect.alaw"
 #define INSTALLING					"/opt/qcy/audio_resource/begin_update.alaw"
@@ -263,9 +263,8 @@ static int server_message_proc(void)
     if (ret == -1)
         return -1;
     else if( ret == 1)
-    {
     	return 0;
-    }
+
     switch(msg.message){
         case MSG_MANAGER_EXIT:
             server_set_status(STATUS_TYPE_EXIT,1);
@@ -323,8 +322,8 @@ static int server_message_proc(void)
 //							send_iot_ack(&msg, &send_msg, MSG_SPEAKER_CTL_PLAY_ACK, msg.receiver, ret,
 //									NULL, 0);
 			}
-			else if( msg.arg_in.cat == SPEAKER_CTL_DEV_START_ING ) {
-							ret = play(DEV_START_ING);
+			else if( msg.arg_in.cat == SPEAKER_CTL_INTERNET_CONNECT_DEFEAT ) {
+							ret = play(INTERNET_CONNECT_DEFEAT);
 //							send_iot_ack(&msg, &send_msg, MSG_SPEAKER_CTL_PLAY_ACK, msg.receiver, ret,
 //									NULL, 0);
 			}
