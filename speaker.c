@@ -49,7 +49,8 @@
 /*
  * static
  */
-static int intercom_flag = 0;
+static pthread_mutex_t		s_mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_cond_t		s_cond = PTHREAD_COND_INITIALIZER;
 
 //variable
 static 	message_buffer_t	message;
@@ -251,6 +252,15 @@ static int server_message_proc(void)
     message_t send_msg;
     msg_init(&msg);
     msg_init(&send_msg);
+
+	pthread_mutex_lock(&s_mutex);
+	if( message.head == message.tail ) {
+		if( info.status==STATUS_RUN ) {
+			pthread_cond_wait(&s_cond,&s_mutex);
+		}
+	}
+	pthread_mutex_unlock(&s_mutex);
+
     ret = pthread_rwlock_wrlock(&message.lock);
     if(ret) {
         log_err("add message lock fail, ret = %d\n", ret);
@@ -291,12 +301,10 @@ static int server_message_proc(void)
 //						NULL, 0);
 			} else if( msg.arg_in.cat == SPEAKER_CTL_INTERCOM_START ) {
 				ret = intercom_start();
-				intercom_flag = 1;
 				send_iot_ack(&msg, &send_msg, MSG_SPEAKER_CTL_PLAY_ACK, msg.receiver, ret,
 						NULL, 0);
 			} else if( msg.arg_in.cat == SPEAKER_CTL_INTERCOM_STOP ) {
 				ret = intercom_stop();
-				intercom_flag = 0;
 				send_iot_ack(&msg, &send_msg, MSG_SPEAKER_CTL_PLAY_ACK, msg.receiver, ret,
 						NULL, 0);
 			}
@@ -462,8 +470,6 @@ static void *server_func(void* arg)
 			break;
 		}
 		//usleep(100 * 1000);//100ms
-		if(!intercom_flag)
-			usleep(100 * 1000);
 	}
     
     server_release();
@@ -520,6 +526,12 @@ int server_speaker_message(message_t *msg)
 	log_qcy(DEBUG_VERBOSE, "push into the speaker message queue: sender=%s, message=%d, ret=%d", get_string_name(msg->sender), msg->message, ret);
 	if( ret!=0 )
 		log_qcy(DEBUG_SERIOUS, "message push in speaker error =%d", ret);
+	else {
+		pthread_mutex_lock(&s_mutex);
+		pthread_cond_signal(&s_cond);
+		pthread_mutex_unlock(&s_mutex);
+	}
+
 	ret = pthread_rwlock_unlock(&message.lock);
 	if (ret)
 		log_qcy(DEBUG_SERIOUS, "add message unlock fail, ret = %d\n", ret);
