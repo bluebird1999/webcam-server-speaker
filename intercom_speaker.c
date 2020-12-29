@@ -10,17 +10,7 @@
 #include <getopt.h>
 
 #include "../../tools/tools_interface.h"
-
-typedef struct playback {
-    struct rts_audio_attr attr;
-    int playback;
-    int decode;
-    int resample;
-    int mixer;
-    int is_intercom_start;
-}Playback;
-
-static Playback myplayback;
+#include "intercom_speaker.h"
 
 static void recycle_buffer(void *master, struct rts_av_buffer *buffer)
 {    

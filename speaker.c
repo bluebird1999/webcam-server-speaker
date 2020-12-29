@@ -172,7 +172,7 @@ static int send_iot_ack(message_t *org_msg, message_t *msg, int id, int receiver
 {
 	int ret = 0;
     /********message body********/
-	msg_init(msg);
+//	msg_init(msg);
 	memcpy(&(msg->arg_pass), &(org_msg->arg_pass),sizeof(message_arg_t));
 	msg->message = id | 0x1000;
 	msg->sender = msg->receiver = SERVER_SPEAKER;
@@ -282,6 +282,14 @@ static int server_message_proc(void)
         case MSG_MANAGER_TIMER_ACK:
             ((HANDLER)(msg.arg))();
             break;
+        case MSG_SPEAKER_PROPERTY_GET:
+        	if(myplayback.playback != -1)
+        	{
+        		send_msg.arg_in.cat = myplayback.playback;
+        		send_iot_ack(&msg, &send_msg, MSG_SPEAKER_PROPERTY_GET_ACK, msg.receiver, ret,
+        		        							NULL, 0);
+        	}
+        	break;
         case MSG_SPEAKER_CTL_PLAY:
         	if( msg.arg_in.cat == SPEAKER_CTL_DEV_START_FINISH ) {
 				ret = play(DEV_START_FINISH);
@@ -300,11 +308,11 @@ static int server_message_proc(void)
 //				send_iot_ack(&msg, &send_msg, MSG_SPEAKER_CTL_PLAY_ACK, msg.receiver, ret,
 //						NULL, 0);
 			} else if( msg.arg_in.cat == SPEAKER_CTL_INTERCOM_START ) {
-				ret = intercom_start();
+//				ret = intercom_start();
 				send_iot_ack(&msg, &send_msg, MSG_SPEAKER_CTL_PLAY_ACK, msg.receiver, ret,
 						NULL, 0);
 			} else if( msg.arg_in.cat == SPEAKER_CTL_INTERCOM_STOP ) {
-				ret = intercom_stop();
+//				ret = intercom_stop();
 				send_iot_ack(&msg, &send_msg, MSG_SPEAKER_CTL_PLAY_ACK, msg.receiver, ret,
 						NULL, 0);
 			}
@@ -392,6 +400,9 @@ static int server_idle(void)
 static int server_start(void)
 {
     int ret = 0;
+
+    ret = intercom_start();
+
     server_set_status(STATUS_TYPE_STATUS, STATUS_RUN);
     return ret;
 }
@@ -408,6 +419,7 @@ static int server_run(void)
 static int server_stop(void)
 {
     int ret = 0;
+    ret = intercom_stop();
     server_set_status(STATUS_TYPE_STATUS,STATUS_IDLE);
     return ret;
 }
