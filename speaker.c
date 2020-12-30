@@ -82,11 +82,11 @@ static int server_wait(void);
 static int server_setup(void);
 static int server_idle(void);
 static int server_start(void);
-static int server_run(void);
 static int server_stop(void);
 static int server_restart(void);
 static int server_error(void);
 static int server_release(void);
+static void task_default(void);
 static int server_get_status(int type);
 static int server_set_status(int type, int st);
 static void server_thread_termination(int arg);
@@ -353,6 +353,11 @@ static int server_message_proc(void)
 				//		NULL, 0);
 			}
             break;
+        case MSG_REALTEK_PROPERTY_NOTIFY:
+        	if( msg.arg_in.cat == REALTEK_PROPERTY_AV_STATUS ) {
+        		misc_set_bit(&info.init_status, SPEAKER_INIT_CONDITION_REALTEK_INIT, 1);
+			}
+        	break;
         default:
         	log_err("not processed message = %d", msg.message);
         	break;
@@ -377,7 +382,8 @@ static int server_none(void)
 static int server_wait(void)
 {
     int ret = 0;
-    server_set_status(STATUS_TYPE_STATUS, STATUS_SETUP);
+	if( misc_full_bit( info.init_status, SPEAKER_INIT_CONDITION_NUM ) )
+		server_set_status(STATUS_TYPE_STATUS, STATUS_SETUP);
     return ret;
 }
 
@@ -404,15 +410,6 @@ static int server_start(void)
     ret = intercom_start();
 
     server_set_status(STATUS_TYPE_STATUS, STATUS_RUN);
-    return ret;
-}
-
-static int server_run(void)
-{
-    int ret = 0;
-    if(server_message_proc() != 0) {
-        server_set_status(STATUS_TYPE_STATUS, STATUS_STOP);
-    }
     return ret;
 }
 
@@ -444,14 +441,8 @@ static int server_error(void)
     return ret;
 }
 
-static void *server_func(void* arg)
+static void task_default(void)
 {
-    signal(SIGINT, server_thread_termination);
-    signal(SIGTERM, server_thread_termination);
-    
-    misc_set_thread_name("server_speaker");
-    pthread_detach(pthread_self());
-	while( !info.exit ) {
 	switch(info.status){
 		case STATUS_NONE:
 			server_none();
@@ -469,7 +460,6 @@ static void *server_func(void* arg)
 			server_start();
 			break;
 		case STATUS_RUN:
-			server_run();
 			break;
 		case STATUS_STOP:
 			server_stop();
@@ -481,6 +471,20 @@ static void *server_func(void* arg)
 			server_error();
 			break;
 		}
+	return;
+}
+
+static void *server_func(void* arg)
+{
+    signal(SIGINT, server_thread_termination);
+    signal(SIGTERM, server_thread_termination);
+
+    misc_set_thread_name("server_speaker");
+    pthread_detach(pthread_self());
+    info.task.func = task_default;
+	while( !info.exit ) {
+		info.task.func();
+		server_message_proc();
 		//usleep(100 * 1000);//100ms
 	}
     
@@ -525,14 +529,16 @@ int server_speaker_start(void)
 int server_speaker_message(message_t *msg)
 {
 	int ret = 0;
-	if( server_get_status(STATUS_TYPE_STATUS)!= STATUS_RUN ) {
-		log_qcy(DEBUG_SERIOUS, "speaker server is not ready!");
-		return -1;
-	}
+
 	ret = pthread_rwlock_wrlock(&message.lock);
 	if(ret)	{
 		log_qcy(DEBUG_SERIOUS, "add message lock fail, ret = %d\n", ret);
 		return ret;
+	}
+	if( !message.init ) {
+		log_qcy(DEBUG_INFO, "speaker server is not ready for message processing!");
+		 pthread_rwlock_unlock(&message.lock);
+		return -1;
 	}
 	ret = msg_buffer_push(&message, msg);
 	log_qcy(DEBUG_VERBOSE, "push into the speaker message queue: sender=%s, message=%d, ret=%d", get_string_name(msg->sender), msg->message, ret);

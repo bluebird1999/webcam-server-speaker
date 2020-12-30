@@ -59,14 +59,14 @@ int play_audio(char *path)
     fseek(fp, 0x3a, SEEK_SET);
 
     clearerr(fp);
-//  usleep(1000);
+
+    usleep(1000 * 1000 * 2);
     while (1) {
 
     	ret = fread(buffer, 1, SIZE, fp);
 
     	if(ret != SIZE && feof(fp))
     	{
-    		usleep(1000 * 1000 * 2);
     		if(ret != 0)
     			intercom_speak(buffer, ret);
     		log_qcy(DEBUG_INFO, "finish\n");
@@ -79,10 +79,12 @@ int play_audio(char *path)
     		break;
     	}else
     	{
-    		intercom_speak(buffer, ret);
+    		if(intercom_speak(buffer, ret))
+    		{
+    			ret = -1;
+    			break;
+    		}
     	}
-
-        usleep(1000);
     }
     fclose(fp);
 exit:

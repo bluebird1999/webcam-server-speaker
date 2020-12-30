@@ -9,6 +9,7 @@
 #include <rtsaudio.h>
 #include <getopt.h>
 
+#include "../../manager/global_interface.h"
 #include "../../tools/tools_interface.h"
 #include "intercom_speaker.h"
 
@@ -20,10 +21,15 @@ static void recycle_buffer(void *master, struct rts_av_buffer *buffer)
 int intercom_speak(char *buffer, unsigned int buffer_size)
 {
     struct rts_av_buffer *rts_buffer = NULL;
-    
+
+    if(myplayback.is_intercom_start == 0) {
+        log_qcy(DEBUG_SERIOUS, "intercom already stop");
+        return -1;
+    }
+
     rts_buffer = rts_av_new_buffer(buffer_size);                
     if (!rts_buffer) {                     
-        log_err("alloc buffer fail\n");
+        log_qcy(DEBUG_SERIOUS, "alloc buffer fail\n");
         return -1;
     }
     
@@ -42,7 +48,7 @@ int intercom_speak(char *buffer, unsigned int buffer_size)
 int intercom_stop(void)
 {
     if(myplayback.is_intercom_start == 0) {
-        log_err("intercom already stop");
+        log_qcy(DEBUG_SERIOUS, "intercom already stop");
         return -1;
     }
     
@@ -83,14 +89,14 @@ int intercom_start(void)
     struct rts_av_profile profile;
     
     if(myplayback.is_intercom_start == 1) {
-        log_err("intercom already start");
+        log_qcy(DEBUG_SERIOUS, "intercom already start");
         goto err_decode;
     }
     
     if(myplayback.decode < 0) {
         myplayback.decode = rts_av_create_audio_decode_chn();  
         if (RTS_IS_ERR(myplayback.decode)) {   
-            log_err("create audio decode chn fail, ret = %d\n", myplayback.decode);
+            log_qcy(DEBUG_SERIOUS, "create audio decode chn fail, ret = %d\n", myplayback.decode);
             ret = -1;
             goto err_decode;
         }
@@ -100,7 +106,7 @@ int intercom_start(void)
     profile.fmt = RTS_A_FMT_ALAW;
     ret = rts_av_set_profile(myplayback.decode, &profile);    
     if (RTS_IS_ERR(ret)) {    
-        log_err("set decode fail, ret = %d\n", ret);
+        log_qcy(DEBUG_SERIOUS, "set decode fail, ret = %d\n", ret);
         ret = -1;
         goto err_set_profile;
     }
@@ -114,7 +120,7 @@ int intercom_start(void)
         myplayback.resample = rts_av_create_audio_resample_chn(myplayback.attr.rate,
                 myplayback.attr.format, myplayback.attr.channels);
         if (RTS_IS_ERR(myplayback.resample)) {   
-            log_err("create audio resample chn fail, ret = %d\n",
+            log_qcy(DEBUG_SERIOUS, "create audio resample chn fail, ret = %d\n",
                     myplayback.resample);
             ret = -1;
             goto err_resample;
@@ -124,7 +130,7 @@ int intercom_start(void)
     if(myplayback.mixer < 0) {
         myplayback.mixer = rts_av_create_audio_mixer_chn();
         if (RTS_IS_ERR(myplayback.mixer)) {
-            log_err("rts_av_create_audio_mixer_chn failed, ret = %d", myplayback.mixer);
+            log_qcy(DEBUG_SERIOUS, "rts_av_create_audio_mixer_chn failed, ret = %d", myplayback.mixer);
             ret = -1;
             goto err_mixer;
         }
@@ -133,7 +139,7 @@ int intercom_start(void)
     if(myplayback.playback < 0) {
         myplayback.playback = rts_av_create_audio_playback_chn(&myplayback.attr); 
         if (RTS_IS_ERR(myplayback.playback)) {    
-        	log_err("create audio playback chn fail, ret = %d",
+        	log_qcy(DEBUG_SERIOUS, "create audio playback chn fail, ret = %d",
                     myplayback.playback);       
             ret = -1;
             goto err_playback;
@@ -142,21 +148,21 @@ int intercom_start(void)
     
     ret = rts_av_bind(myplayback.decode, myplayback.resample);  
     if (RTS_IS_ERR(ret)) {     
-    	log_err("bind decode and resample fail\n");
+    	log_qcy(DEBUG_SERIOUS, "bind decode and resample fail\n");
     	ret = -1;
         goto err_bind;
     }        
     
     ret = rts_av_bind(myplayback.resample, myplayback.mixer);  
     if (RTS_IS_ERR(ret)) {     
-    	log_err("bind decode and resample fail\n");
+    	log_qcy(DEBUG_SERIOUS, "bind decode and resample fail\n");
     	ret = -1;
         goto err_bind;
     }
     
     ret = rts_av_bind(myplayback.mixer, myplayback.playback); 
     if (RTS_IS_ERR(ret)) {    
-    	log_err("bind resample and playback fail\n");
+    	log_qcy(DEBUG_SERIOUS, "bind resample and playback fail\n");
     	ret = -1;
         goto err_bind;
     }

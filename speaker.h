@@ -15,8 +15,8 @@
 /*
  * define
  */
-
-
+#define		SPEAKER_INIT_CONDITION_NUM				1
+#define		SPEAKER_INIT_CONDITION_REALTEK_INIT		0
 /*
  * structure
  */
