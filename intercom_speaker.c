@@ -37,8 +37,8 @@ int intercom_speak(char *buffer, unsigned int buffer_size)
     rts_av_get_buffer(rts_buffer);
     
     memcpy(rts_buffer->vm_addr, buffer, buffer_size);
-    rts_buffer->bytesused = buffer_size;                     
-    rts_buffer->timestamp = 0;         
+    rts_buffer->bytesused = buffer_size;
+    rts_buffer->timestamp = 0;
     rts_av_send(myplayback.decode, rts_buffer);
     
     RTS_SAFE_RELEASE(rts_buffer, rts_av_put_buffer);

@@ -26,6 +26,7 @@
 #include "../../server/miio/miio_interface.h"
 #include "../../server/miss/miss_interface.h"
 #include "../../server/audio/audio_interface.h"
+#include "../../server/device/device_interface.h"
 //server header
 #include "speaker.h"
 #include "speaker_interface.h"
@@ -103,9 +104,26 @@ static char* get_string_name(int i);
 static int play(char *path)
 {
     int ret;
+
+	message_t dev_send_msg;
+	device_iot_config_t device_iot_tmp;
+	msg_init(&dev_send_msg);
+	memset(&device_iot_tmp, 0 , sizeof(device_iot_config_t));
+	device_iot_tmp.amp_on_off = 1;
+	dev_send_msg.message = MSG_DEVICE_CTRL_DIRECT;
+	dev_send_msg.sender = dev_send_msg.receiver = SERVER_SPEAKER;
+	dev_send_msg.arg = (void*)&device_iot_tmp;
+	dev_send_msg.arg_in.cat = DEVICE_CTRL_AMPLIFIER;
+	dev_send_msg.arg_size = sizeof(device_iot_config_t);
+	manager_common_send_message(SERVER_DEVICE, &dev_send_msg);
+
     ret = play_audio(path);
     if(ret)
         log_err("play_audio failed");
+
+    sleep(5);
+    device_iot_tmp.amp_on_off = 0;
+    manager_common_send_message(SERVER_DEVICE, &dev_send_msg);
     return ret;
 }
 
@@ -309,10 +327,36 @@ static int server_message_proc(void)
 //						NULL, 0);
 			} else if( msg.arg_in.cat == SPEAKER_CTL_INTERCOM_START ) {
 //				ret = intercom_start();
+				//open spk
+				message_t dev_send_msg;
+				device_iot_config_t device_iot_tmp;
+				msg_init(&dev_send_msg);
+				memset(&device_iot_tmp, 0 , sizeof(device_iot_config_t));
+				device_iot_tmp.amp_on_off = 1;
+				dev_send_msg.message = MSG_DEVICE_CTRL_DIRECT;
+				dev_send_msg.arg_in.cat = DEVICE_CTRL_AMPLIFIER;
+				dev_send_msg.sender = dev_send_msg.receiver = SERVER_SPEAKER;
+				dev_send_msg.arg = (void*)&device_iot_tmp;
+				dev_send_msg.arg_size = sizeof(device_iot_config_t);
+				manager_common_send_message(SERVER_DEVICE, &dev_send_msg);
+
 				send_iot_ack(&msg, &send_msg, MSG_SPEAKER_CTL_PLAY_ACK, msg.receiver, ret,
 						NULL, 0);
 			} else if( msg.arg_in.cat == SPEAKER_CTL_INTERCOM_STOP ) {
 //				ret = intercom_stop();
+				//close spk
+				message_t dev_send_msg;
+				device_iot_config_t device_iot_tmp;
+				msg_init(&dev_send_msg);
+				memset(&device_iot_tmp, 0 , sizeof(device_iot_config_t));
+				device_iot_tmp.amp_on_off = 0;
+				dev_send_msg.message = MSG_DEVICE_CTRL_DIRECT;
+				dev_send_msg.arg_in.cat = DEVICE_CTRL_AMPLIFIER;
+				dev_send_msg.sender = dev_send_msg.receiver = SERVER_SPEAKER;
+				dev_send_msg.arg = (void*)&device_iot_tmp;
+				dev_send_msg.arg_size = sizeof(device_iot_config_t);
+				manager_common_send_message(SERVER_DEVICE, &dev_send_msg);
+
 				send_iot_ack(&msg, &send_msg, MSG_SPEAKER_CTL_PLAY_ACK, msg.receiver, ret,
 						NULL, 0);
 			}
