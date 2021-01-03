@@ -301,11 +301,14 @@ static int server_message_proc(void)
             ((HANDLER)(msg.arg))();
             break;
         case MSG_SPEAKER_PROPERTY_GET:
-        	if(myplayback.playback != -1)
+        	if(msg.arg_pass.cat == SPEAKER_PLAYBACK_CHN_NUM)
         	{
-        		send_msg.arg_in.cat = myplayback.playback;
-        		send_iot_ack(&msg, &send_msg, MSG_SPEAKER_PROPERTY_GET_ACK, msg.receiver, ret,
-        		        							NULL, 0);
+        		if(myplayback.playback > 0)
+				{
+					send_msg.arg_in.cat = myplayback.playback;
+					send_iot_ack(&msg, &send_msg, MSG_SPEAKER_PROPERTY_GET_ACK, msg.receiver, ret,
+														NULL, 0);
+				}
         	}
         	break;
         case MSG_SPEAKER_CTL_PLAY:

@@ -138,7 +138,7 @@ int intercom_start(void)
     
     if(myplayback.playback < 0) {
         myplayback.playback = rts_av_create_audio_playback_chn(&myplayback.attr); 
-        if (RTS_IS_ERR(myplayback.playback)) {    
+        if (RTS_IS_ERR(myplayback.playback)) {
         	log_qcy(DEBUG_SERIOUS, "create audio playback chn fail, ret = %d",
                     myplayback.playback);       
             ret = -1;
@@ -146,6 +146,8 @@ int intercom_start(void)
         }
     }
     
+    log_qcy(DEBUG_INFO, "speaker myplayback.playback = %d\n", myplayback.playback);
+
     ret = rts_av_bind(myplayback.decode, myplayback.resample);  
     if (RTS_IS_ERR(ret)) {     
     	log_qcy(DEBUG_SERIOUS, "bind decode and resample fail\n");
