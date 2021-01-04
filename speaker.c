@@ -38,6 +38,7 @@
  * #define
  */
 #define DEV_START_FINISH 			"/opt/qcy/audio_resource/dev_start_finish.alaw"
+#define DEV_START_ING				"/opt/qcy/audio_resource/dev_starting.alaw"
 #define WIFI_CONNECT_SUCCEED 		"/opt/qcy/audio_resource/wifi_connect_success.alaw"
 #define INTERNET_CONNECT_DEFEAT		"/opt/qcy/audio_resource/wifi_connect_failed.alaw"
 #define ZBAR_SCAN_SUCCEED 			"/opt/qcy/audio_resource/scan_zbar_success.alaw"
@@ -50,6 +51,7 @@
 /*
  * static
  */
+static int init_flag = 0;
 static pthread_mutex_t		s_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t		s_cond = PTHREAD_COND_INITIALIZER;
 
@@ -121,9 +123,9 @@ static int play(char *path)
     if(ret)
         log_err("play_audio failed");
 
-    sleep(5);
-    device_iot_tmp.amp_on_off = 0;
-    manager_common_send_message(SERVER_DEVICE, &dev_send_msg);
+//    sleep(5);
+//    device_iot_tmp.amp_on_off = 0;
+//    manager_common_send_message(SERVER_DEVICE, &dev_send_msg);
     return ret;
 }
 
@@ -455,6 +457,12 @@ static int server_start(void)
     int ret = 0;
 
     ret = intercom_start();
+
+    if(init_flag == 0)
+    {
+        play(DEV_START_ING);
+        init_flag = 1;
+    }
 
     server_set_status(STATUS_TYPE_STATUS, STATUS_RUN);
     return ret;
