@@ -38,7 +38,7 @@
  * #define
  */
 #define DEV_START_FINISH 			"/opt/qcy/audio_resource/dev_start_finish.alaw"
-#define DEV_START_ING				"/opt/qcy/audio_resource/dev_starting.alaw"
+#define DEV_START_ING	 			"/opt/qcy/audio_resource/dev_starting.alaw"
 #define WIFI_CONNECT_SUCCEED 		"/opt/qcy/audio_resource/wifi_connect_success.alaw"
 #define INTERNET_CONNECT_DEFEAT		"/opt/qcy/audio_resource/wifi_connect_failed.alaw"
 #define ZBAR_SCAN_SUCCEED 			"/opt/qcy/audio_resource/scan_zbar_success.alaw"
@@ -51,7 +51,7 @@
 /*
  * static
  */
-static int init_flag = 0;
+static int 					first_start_flag = 0;
 static pthread_mutex_t		s_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t		s_cond = PTHREAD_COND_INITIALIZER;
 
@@ -73,6 +73,7 @@ static server_name_t server_name_tt[] = {
 		{11, "speaker"},
 		{12, "video2"},
 		{13, "scanner"},
+		{14, "video3"},
 		{32, "manager"},
 };
 
@@ -270,8 +271,12 @@ static int server_message_proc(void)
     int ret = 0, ret1 = 0;
     message_t msg;
     message_t send_msg;
+	device_iot_config_t device_iot_tmp;
+
     msg_init(&msg);
     msg_init(&send_msg);
+	memset(&device_iot_tmp, 0 , sizeof(device_iot_config_t));
+
 
 	pthread_mutex_lock(&s_mutex);
 	if( message.head == message.tail ) {
@@ -334,9 +339,7 @@ static int server_message_proc(void)
 //				ret = intercom_start();
 				//open spk
 				message_t dev_send_msg;
-				device_iot_config_t device_iot_tmp;
 				msg_init(&dev_send_msg);
-				memset(&device_iot_tmp, 0 , sizeof(device_iot_config_t));
 				device_iot_tmp.amp_on_off = 1;
 				dev_send_msg.message = MSG_DEVICE_CTRL_DIRECT;
 				dev_send_msg.arg_in.cat = DEVICE_CTRL_AMPLIFIER;
@@ -345,15 +348,16 @@ static int server_message_proc(void)
 				dev_send_msg.arg_size = sizeof(device_iot_config_t);
 				manager_common_send_message(SERVER_DEVICE, &dev_send_msg);
 
+				system("amixer cset numid=11 20");
+				system("amixer cset numid=1 108");
+
 				send_iot_ack(&msg, &send_msg, MSG_SPEAKER_CTL_PLAY_ACK, msg.receiver, ret,
 						NULL, 0);
 			} else if( msg.arg_in.cat == SPEAKER_CTL_INTERCOM_STOP ) {
 //				ret = intercom_stop();
 				//close spk
 				message_t dev_send_msg;
-				device_iot_config_t device_iot_tmp;
 				msg_init(&dev_send_msg);
-				memset(&device_iot_tmp, 0 , sizeof(device_iot_config_t));
 				device_iot_tmp.amp_on_off = 0;
 				dev_send_msg.message = MSG_DEVICE_CTRL_DIRECT;
 				dev_send_msg.arg_in.cat = DEVICE_CTRL_AMPLIFIER;
@@ -361,6 +365,9 @@ static int server_message_proc(void)
 				dev_send_msg.arg = (void*)&device_iot_tmp;
 				dev_send_msg.arg_size = sizeof(device_iot_config_t);
 				manager_common_send_message(SERVER_DEVICE, &dev_send_msg);
+
+				system("amixer cset numid=11 46");
+				system("amixer cset numid=1 127");
 
 				send_iot_ack(&msg, &send_msg, MSG_SPEAKER_CTL_PLAY_ACK, msg.receiver, ret,
 						NULL, 0);
@@ -458,10 +465,10 @@ static int server_start(void)
 
     ret = intercom_start();
 
-    if(init_flag == 0)
+    if(!first_start_flag)
     {
-        play(DEV_START_ING);
-        init_flag = 1;
+    	ret = play(DEV_START_ING);
+    	first_start_flag = 1;
     }
 
     server_set_status(STATUS_TYPE_STATUS, STATUS_RUN);
