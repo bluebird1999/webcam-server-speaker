@@ -467,7 +467,7 @@ static int server_start(void)
 
     if(!first_start_flag)
     {
-    	ret = play(DEV_START_ING);
+    	ret = play(DEV_START_FINISH);
     	first_start_flag = 1;
     }
 

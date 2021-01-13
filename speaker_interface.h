@@ -16,7 +16,7 @@
 /*
  * define
  */
-#define		SERVER_SPEAKER_VERSION_STRING		"alpha-3.0.4"
+#define		SERVER_SPEAKER_VERSION_STRING		"alpha-3.0.5"
 
 #define		MSG_SPEAKER_BASE					(SERVER_SPEAKER<<16)
 #define		MSG_SPEAKER_SIGINT					MSG_SPEAKER_BASE | 0x0000
