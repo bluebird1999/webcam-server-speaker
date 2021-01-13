@@ -410,8 +410,10 @@ static int server_message_proc(void)
 			}
             break;
         case MSG_REALTEK_PROPERTY_NOTIFY:
+        case MSG_REALTEK_PROPERTY_GET_ACK:
         	if( msg.arg_in.cat == REALTEK_PROPERTY_AV_STATUS ) {
-        		misc_set_bit(&info.init_status, SPEAKER_INIT_CONDITION_REALTEK_INIT, 1);
+        		if( msg.arg_in.dog == 1 )
+        			misc_set_bit(&info.init_status, SPEAKER_INIT_CONDITION_REALTEK_INIT, 1);
 			}
         	break;
         default:
@@ -438,8 +440,23 @@ static int server_none(void)
 static int server_wait(void)
 {
     int ret = 0;
+    message_t msg;
+
+    if( !misc_get_bit( info.init_status, SPEAKER_INIT_CONDITION_REALTEK_INIT ) ) {
+    	/********message body********/
+		msg_init(&msg);
+		msg.message = MSG_REALTEK_PROPERTY_GET;
+		msg.sender = msg.receiver = SERVER_SPEAKER;
+		msg.arg_in.cat = REALTEK_PROPERTY_AV_STATUS;
+		manager_common_send_message(SERVER_REALTEK, &msg);
+		/****************************/
+		usleep(MESSAGE_RESENT_SLEEP);
+    }
+
 	if( misc_full_bit( info.init_status, SPEAKER_INIT_CONDITION_NUM ) )
+	{
 		server_set_status(STATUS_TYPE_STATUS, STATUS_SETUP);
+	}
     return ret;
 }
 
